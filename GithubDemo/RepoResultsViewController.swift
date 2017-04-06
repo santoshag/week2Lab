@@ -85,7 +85,7 @@ class RepoResultsViewController: UIViewController, UITableViewDataSource {
         cell.forkLabel.text = String(describing: forks)
         cell.usernameLabel.text = owner
         cell.descriptionLabel.text = desc
-        cell.imageView?.setImageWith(image as! URL)
+        cell.imageView?.setImageWith(URL(string: image!)!)
         
         return cell
     }
