@@ -10,13 +10,15 @@ import UIKit
 import MBProgressHUD
 
 // Main ViewController
-class RepoResultsViewController: UIViewController {
+class RepoResultsViewController: UIViewController, UITableViewDataSource {
 
     var searchBar: UISearchBar!
     var searchSettings = GithubRepoSearchSettings()
 
     var repos: [GithubRepo]!
 
+    @IBOutlet var tableView: UITableView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -30,6 +32,10 @@ class RepoResultsViewController: UIViewController {
 
         // Perform the first search when the view controller first loads
         doSearch()
+        
+        tableView.dataSource = self
+        tableView.estimatedRowHeight = 100
+        tableView.rowHeight = UITableViewAutomaticDimension
     }
 
     // Perform the search.
@@ -41,16 +47,50 @@ class RepoResultsViewController: UIViewController {
         GithubRepo.fetchRepos(searchSettings, successCallback: { (newRepos) -> Void in
 
             // Print the returned repositories to the output window
+            self.repos = newRepos
+//            print(self.repos)
             for repo in newRepos {
                 print(repo)
-            }   
+                //self.repos.append(repo)
+            }
+            self.tableView.reloadData()
 
             MBProgressHUD.hide(for: self.view, animated: true)
             }, error: { (error) -> Void in
-                print(error)
+                
         })
     }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if let repos = repos{
+            return repos.count
+        }else{
+            return 0
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "RepoCell") as! RepoCell
+        let repo = repos![indexPath.row]
+        
+        let title = repo.name
+        let stars = repo.stars
+        let forks = repo.forks
+        let owner = repo.ownerHandle
+        let desc = repo.repoDescription
+        let image = repo.ownerAvatarURL
+        
+        cell.repoTitleLabel.text = title
+        cell.starLabel.text = String(describing: stars)
+        cell.forkLabel.text = String(describing: forks)
+        cell.usernameLabel.text = owner
+        cell.descriptionLabel.text = desc
+        cell.imageView?.setImageWith(image as! URL)
+        
+        return cell
+    }
 }
+
 
 // SearchBar methods
 extension RepoResultsViewController: UISearchBarDelegate {
